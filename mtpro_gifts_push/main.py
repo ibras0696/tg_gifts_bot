@@ -1,4 +1,6 @@
-from playwright.sync_api import sync_playwright
+from pprint import pprint
+
+from playwright.sync_api import sync_playwright, Page
 import time, json
 import os
 
@@ -18,26 +20,52 @@ def load_gifts():
         return []
 
 
-def parse_gifts(page):
-    # Пример: находим все блоки подарков
-    blocks = page.query_selector_all("div:has-text('⭐')")
+def parse_gifts(page: Page):
     gifts = []
-    for b in blocks:
-        try:
-            text = b.inner_text().strip()
-            if text:
-                gifts.append(text)
-        except:
-            continue
-    return list(set(gifts))  # убрать дубли
+
+    try:
+        # Открытие меню
+        page.click('#LeftMainHeader > div.DropdownMenu.main-menu > button')
+
+        # Открываем меню пользователя
+        page.wait_for_selector("div.Avatar.account-avatar", state="visible", timeout=10000)
+        page.click("div.Avatar.account-avatar")
+
+        # Кликаем по "Send a gift" — подстрой селектор если не подходит
+        page.click("text=Send a Gift", timeout=5000)
+
+        # Нажимаем на профиль человека
+        page.locator('#LeftMainHeader > div.DropdownMenu.main-menu > button').first.click()
+
+        # Ждем появления блока подарков
+        page.wait_for_selector("div.modal-dialog", timeout=10000)
+
+        # Только после этого получаем подарки
+        blocks = page.query_selector_all("div.modal-dialog div.gift-item")  # пример селектора
+
+        pprint(blocks)
+        for b in blocks:
+            try:
+                text = b.inner_text().strip()
+                if text:
+                    gifts.append(text)
+            except:
+                continue
+
+    except Exception as ex:
+        print(f'❌ Ошибка в parse_gifts: {ex}')
+
+    return list(set(gifts))
+
 
 
 with sync_playwright() as p:
-    browser = p.chromium.launch(headless=False)
+    browser = p.chromium.launch(headless=False,
+                                args=["--disable-blink-features=AutomationControlled"])
     context = browser.new_context(storage_state="session.json" if os.path.exists("session.json") else None)
     page = context.new_page()
 
-    page.goto("https://web.telegram.org/k/")
+    page.goto("https://web.telegram.org/a/")
 
     if not os.path.exists("session.json"):
         input("👉 Войди в Telegram вручную и нажми Enter.")
