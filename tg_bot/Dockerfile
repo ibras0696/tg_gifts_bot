@@ -1,19 +1,14 @@
 FROM python:3.12-slim
 
-# Установка рабочей директории
 WORKDIR /app
 
-# Устанавливаем PYTHONPATH
 ENV PYTHONPATH=/app:/database
 
-# Копируем зависимости
 COPY requirements.txt .
-
-# Устанавливаем зависимости
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Копируем исходный код проекта (весь)
-COPY . .
+# Копируем весь проект, чтобы был и /app и /database
+COPY ./tg_bot /app
+COPY ./database /database
 
-# Запуск бота
 CMD ["python", "main.py"]
