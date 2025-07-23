@@ -121,12 +121,10 @@ async def main():
                     await page.reload()
                     await asyncio.sleep(5)
                     continue
-
+                # 📊 Подсчёт количества подарков
                 current_count = len(current_gifts)
-                print(current_count)
+                # 📄 Сохранение текущего количества подарков
                 previous_count = load_gifts_count()
-                print(previous_count)
-                await push_bot_group_message(f'{current_gifts} | {previous_count}')
 
                 if current_count != previous_count:
                     diff = current_count - previous_count
