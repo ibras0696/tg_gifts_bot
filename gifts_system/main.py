@@ -67,7 +67,7 @@ async def parse_gifts(page):
             print("Не удалось кликнуть по элементу 'div.ripple-container', возможно элемент не появился.")
             return None
 
-        await asyncio.sleep(10)  # ⏳ Ждём загрузку подарков
+        await asyncio.sleep(20)  # ⏳ Ждём загрузку подарков
         txt = await page.content()  # Получаем HTML-страницу
 
         # 🧽 Парсим HTML с помощью BeautifulSoup
@@ -126,8 +126,7 @@ async def main():
                 print(current_count)
                 previous_count = load_gifts_count()
                 print(previous_count)
-                await push_bot_group_message(f'Данные текст файла: {current_gifts}'
-                                             f'\nДанные сейчас: {previous_count}')
+                await push_bot_group_message(f'{current_gifts} | {previous_count}')
 
                 if current_count != previous_count:
                     diff = current_count - previous_count
