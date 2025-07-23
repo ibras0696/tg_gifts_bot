@@ -11,7 +11,7 @@ DB_PATH = os.path.join(BASE_DIR, 'database', "DataBase.db")
 DATABASE_URL = f"sqlite+aiosqlite:///{DB_PATH}"
 
 # Движок БД
-engine = create_async_engine(DATABASE_URL, echo=True)
+engine = create_async_engine(DATABASE_URL)#, echo=True)
 
 Base = declarative_base()
 
