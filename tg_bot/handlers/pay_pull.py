@@ -17,16 +17,16 @@ async def pay_cmd(call_back: CallbackQuery):
     match call_back.data.replace('pay_', ''):
         case 'pay':
             # Добавление подписки
-            sub = CrudeSubscriptions()
-            result_course_check = await sub.check_subscription(user_id)
-            if result_course_check and getattr(result_course_check, "day_count", 0) > 0:
-                await call_back.message.edit_text(
-                    text=await message_texts.get_profile_text(user_id),
-                    reply_markup=profile_kb
-                )
-            else:
-                text = await handle_pay(user_id)
-                await call_back.message.edit_text(text=text, reply_markup=profile_kb)
+            # sub = CrudeSubscriptions()
+            # result_course_check = await sub.check_subscription(user_id)
+            # if result_course_check and getattr(result_course_check, "day_count", 0) > 0:
+            #     await call_back.message.edit_text(
+            #         text=await message_texts.get_profile_text(user_id),
+            #         reply_markup=profile_kb
+            #     )
+            # else:
+            text = await handle_pay(user_id)
+            await call_back.message.edit_text(text=text, reply_markup=profile_kb)
         case 'support':
             await call_back.message.edit_text(message_texts.support_message_text, reply_markup=support_kb)
         case 'back':
