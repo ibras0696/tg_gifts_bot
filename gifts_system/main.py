@@ -67,25 +67,54 @@ async def click_with_retry(page: Page, selector: str, retries: int = 7, delay: f
 
     return False
 
-
-async def parse_gifts(page: Page):
-    """
-    Асинхронно парсит страницу с подарками пользователя.
-
-    Последовательность действий:
-    - Открывает главное меню.
-    - Переходит в меню аккаунта.
-    - Кликает по пункту "Send a Gift".
-    - Кликает по элементу с подарками с повторными попытками.
-    - Собирает все уникальные URL изображений подарков.
-
-    Args:
-        page (Page): Объект страницы Playwright.
-
-    Returns:
-        set: Множество URL изображений подарков.
-        None: Если произошла ошибка.
-    """
+#
+# async def parse_gifts(page: Page):
+#     """
+#     Асинхронно парсит страницу с подарками пользователя.
+#
+#     Последовательность действий:
+#     - Открывает главное меню.
+#     - Переходит в меню аккаунта.
+#     - Кликает по пункту "Send a Gift".
+#     - Кликает по элементу с подарками с повторными попытками.
+#     - Собирает все уникальные URL изображений подарков.
+#
+#     Args:
+#         page (Page): Объект страницы Playwright.
+#
+#     Returns:
+#         set: Множество URL изображений подарков.
+#         None: Если произошла ошибка.
+#     """
+#     gifts = set()
+#     try:
+#         await page.click('#LeftMainHeader > div.DropdownMenu.main-menu > button')
+#         await page.wait_for_selector("div.Avatar.account-avatar", state="visible", timeout=10000)
+#         await page.click("div.Avatar.account-avatar")
+#         await page.click("text=Send a Gift", timeout=5000)
+#
+#         # Кликаем по "div.ripple-container" с retry
+#         success = await click_with_retry(page, "div.ripple-container", retries=7, delay=2.0)
+#         if not success:
+#             print("Не удалось кликнуть по элементу 'div.ripple-container', возможно элемент не появился.")
+#             return None
+#
+#         # Ждём, чтобы страница обновилась и загрузились подарки
+#         await asyncio.sleep(5)
+#
+#         # Получаем HTML содержимое страницы
+#         txt = await page.content()
+#         soup = BeautifulSoup(txt, 'lxml').find_all('div', class_='G1mBmzxs f5ArEO1S starGiftItem')
+#         for _ in range(2):
+#             print(soup[_])
+#         for i in soup:
+#             img_src = i.find('img').get('src')
+#             gifts.add(img_src)
+#     except Exception as ex:
+#         print(f'❌ Ошибка в parse_gifts: {ex}')
+#         return None
+#     return gifts
+async def parse_gifts(page):
     gifts = set()
     try:
         await page.click('#LeftMainHeader > div.DropdownMenu.main-menu > button')
@@ -99,16 +128,37 @@ async def parse_gifts(page: Page):
             print("Не удалось кликнуть по элементу 'div.ripple-container', возможно элемент не появился.")
             return None
 
-        # Ждём, чтобы страница обновилась и загрузились подарки
-        await asyncio.sleep(5)
-
-        # Получаем HTML содержимое страницы
+        await asyncio.sleep(5)  # ждём загрузку подарков
         txt = await page.content()
-        soup = BeautifulSoup(txt, 'lxml').find_all('div', class_='G1mBmzxs f5ArEO1S starGiftItem')
 
-        for i in soup:
-            img_src = i.find('img').get('src')
-            gifts.add(img_src)
+        soup = BeautifulSoup(txt, 'lxml').find_all('div', class_='G1mBmzxs f5ArEO1S starGiftItem')
+        for idx, gift_div in enumerate(soup):
+            # Получаем количество звезд (число рядом с иконкой)
+            button = gift_div.find('button', class_='Button')
+            star_count = None
+            if button:
+                # Текст кнопки после <i> с классом star-amount-icon — это число звёзд
+                star_icon = button.find('i', class_='star-amount-icon')
+                if star_icon:
+                    # Возьмём весь текст кнопки и уберём символы звёзд
+                    text = button.get_text(strip=True)
+                    # Оставим только цифры из текста
+                    digits = ''.join(filter(str.isdigit, text))
+                    if digits.isdigit():
+                        star_count = int(digits)
+
+            # Получаем alt текст картинки, если есть
+            img = gift_div.find('img')
+            alt_text = img.get('alt', '') if img else ''
+
+            # Формируем уникальный ключ подарка
+            unique_key = (alt_text, star_count)
+            # Если alt пустой, можно использовать индекс, но лучше, если будет какой-то уникальный атрибут
+            if not alt_text:
+                unique_key = (f"gift_idx_{idx}", star_count)
+
+            gifts.add(unique_key)
+
     except Exception as ex:
         print(f'❌ Ошибка в parse_gifts: {ex}')
         return None
