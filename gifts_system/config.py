@@ -5,7 +5,7 @@ import dotenv
 dotenv.load_dotenv()
 
 # Токен бота
-BOT_TOKEN = os.getenv('BOT_TOKEN')
+TOKEN_BOT = os.getenv('TOKEN_BOT')
 
 # Разбор ID админов переданный в env и преобразование
 def raz_admins(s: str) -> list[int]:
