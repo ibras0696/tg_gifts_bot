@@ -126,6 +126,8 @@ async def main():
                 print(current_count)
                 previous_count = load_gifts_count()
                 print(previous_count)
+                await push_bot_group_message(f'Данные текст файла: {current_gifts}'
+                                             f'\nДанные сейчас: {previous_count}')
 
                 if current_count != previous_count:
                     diff = current_count - previous_count
