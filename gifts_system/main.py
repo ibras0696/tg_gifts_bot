@@ -123,7 +123,9 @@ async def main():
                     continue
 
                 current_count = len(current_gifts)
+                print(current_count)
                 previous_count = load_gifts_count()
+                print(previous_count)
 
                 if current_count != previous_count:
                     diff = current_count - previous_count
