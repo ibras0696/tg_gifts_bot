@@ -9,13 +9,16 @@ from config import TOKEN_BOT, GRPS
 from database import init_db
 
 
+bot_tg = Bot(token=TOKEN_BOT)
+
 async def push_bot_group_message(txt: str):
-    # Телеграм бот
-    bot_tg = Bot(token=TOKEN_BOT)
-    # Получение списка администраторов группы
     try:
         await bot_tg.send_message(chat_id=GRPS[0], text=txt)
-    finally:
-        await bot_tg.close()
+    except TelegramBadRequest as e:
+        logging.error(f"Telegram error: {e}")
+
+# В основном файле, при завершении программы
+async def on_shutdown():
+    await bot_tg.close()
 
 

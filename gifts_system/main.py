@@ -6,7 +6,7 @@ import os
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright, Page, TimeoutError
 
-from func_push_bot import push_bot_group_message
+from func_push_bot import push_bot_group_message, on_shutdown
 
 # Абсолютный путь к директории скрипта
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -190,6 +190,7 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+    asyncio.run(on_shutdown())
 
 # В случае ошибок можно посмотреть chat gpt который все писал
 # https://chatgpt.com/c/688014ab-7ca8-832f-8894-6ed1be687175
