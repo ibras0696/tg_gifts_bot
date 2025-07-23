@@ -8,12 +8,12 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-ENV PYTHONPATH=/app:/database
+ENV PYTHONPATH=/app:/app/database
 
-COPY requirements.txt .
+COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt && playwright install --with-deps
 
 COPY ./gifts_system /app
-COPY ./database /database
+COPY ./database /app/database
 
 CMD ["python", "main.py"]

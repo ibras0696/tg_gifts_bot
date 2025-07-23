@@ -6,11 +6,11 @@ services:
       dockerfile: gifts_system/Dockerfile
     volumes:
       - ./gifts_system:/app
-      - ./database:/database
+      - ./database:/app/database
     env_file:
       - .env
     environment:
-      - PYTHONPATH=/app:/database
+      - PYTHONPATH=/app:/app/database
     restart: always
 
   tg_bot:
@@ -20,11 +20,11 @@ services:
       dockerfile: tg_bot/Dockerfile
     volumes:
       - ./tg_bot:/app
-      - ./database:/database
+      - ./database:/app/database
     env_file:
       - .env
     environment:
-      - PYTHONPATH=/app:/database
+      - PYTHONPATH=/app:/app/database
     depends_on:
       - gifts_system
     restart: always
