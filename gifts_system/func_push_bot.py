@@ -2,7 +2,7 @@ import asyncio
 import logging
 
 from aiogram import Dispatcher, Bot
-from aiogram.exceptions import TelegramBadRequest
+from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError
 
 from config import TOKEN_BOT, GRPS
 
@@ -24,6 +24,9 @@ async def push_bot_group_message(txt: str):
                     await bot_tg.send_message(chat_id=sub.telegram_id, text=txt)
                 except TelegramBadRequest as e:
                     logging.error(f"Ошибка при отправке сообщения пользователю {sub.telegram_id}: {e}")
+                except TelegramForbiddenError:
+                    logging.warning(f"Пользователь {sub.telegram_id} заблокировал бота")
+
         # await bot_tg.send_message(chat_id=bot_id, text=txt)
     except TelegramBadRequest as e:
         logging.error(f"Telegram error: {e}")
