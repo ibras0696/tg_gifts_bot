@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 import os
 
 from bs4 import BeautifulSoup
@@ -120,15 +121,14 @@ async def parse_gifts(page):
 
 
 async def main():
-    """
-    Основная асинхронная функция запуска скрипта.
+    # Инициализация логирования
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s | %(levelname)-8s | %(message)s',
+        handlers=[logging.StreamHandler()]
+    )
+    logger = logging.getLogger(__name__)
 
-    - Запускает браузер Playwright.
-    - Загружает сохранённую сессию или просит пользователя войти вручную.
-    - Периодически парсит подарки и сравнивает с сохранёнными.
-    - Если количество подарков изменилось — выводит сообщение.
-    - В случае ошибки перезагружает страницу и продолжает работу.
-    """
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True,
                                           args=[
@@ -148,15 +148,12 @@ async def main():
 
         while True:
             try:
-                # Ждём, чтобы UI успел обновиться
                 await asyncio.sleep(3)
 
-                # Парсим подарки на странице
                 current_gifts = await parse_gifts(page)
 
-                # Если парсинг не удался — перезагружаем страницу
                 if current_gifts is None:
-                    print("Обновляю страницу из-за ошибки парсинга...")
+                    logger.warning("Не удалось получить подарки, перезагружаю страницу...")
                     await page.reload()
                     await asyncio.sleep(5)
                     continue
@@ -167,28 +164,27 @@ async def main():
                 if len(current_gifts) != len(old_gifts):
                     diff = len(current_gifts) - len(old_gifts)
                     if diff > 0:
-                        await push_bot_group_message(f"🎉 Появилось новых подарков: {diff} шт.")
-                        print(f"🎉 Появилось новых подарков: {diff} шт.")
+                        msg = f"🎉 Появилось новых подарков: {diff} шт."
+                        await push_bot_group_message(msg)
+                        logger.info(msg)
                     else:
-                        await push_bot_group_message(f"❗ Подарков стало меньше на {-diff} шт.")
-                        print(f"❗ Подарков стало меньше на {-diff} шт.")
+                        msg = f"❗ Подарков стало меньше на {-diff} шт."
+                        await push_bot_group_message(msg)
+                        logger.info(msg)
                     save_gifts([list(item) for item in current_gifts])
                 else:
-                    print("Количество подарков не изменилось.")
+                    logger.info("Количество подарков не изменилось.")
 
-                # Ждём 15 секунд перед следующим циклом
                 await asyncio.sleep(15)
-
-                # Перезагружаем страницу для обновления данных
                 await page.reload()
 
             except Exception as e:
-                print("⚠️ Ошибка в основном цикле:", e)
-                print("Обновляю страницу и продолжаю...")
+                logger.error(f"⚠️ Ошибка в основном цикле: {e}", exc_info=True)
+                logger.info("Обновляю страницу и продолжаю...")
                 try:
                     await page.reload()
                 except Exception as reload_ex:
-                    print(f"Не удалось обновить страницу: {reload_ex}")
+                    logger.error(f"Не удалось обновить страницу: {reload_ex}", exc_info=True)
                 await asyncio.sleep(10)
 
 
