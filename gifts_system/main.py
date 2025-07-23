@@ -130,7 +130,7 @@ async def main():
     - В случае ошибки перезагружает страницу и продолжает работу.
     """
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=False,
+        browser = await p.chromium.launch(headless=True,
                                           args=[
                                               "--disable-blink-features=AutomationControlled",
                                               "--no-sandbox",
