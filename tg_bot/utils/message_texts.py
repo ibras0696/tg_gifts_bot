@@ -60,5 +60,5 @@ async def push_subs_text(day: int) -> str:
     )
 
 # ❌ Уведомление об окончании подписки
-async def end_push_sub_text(plan: str) -> str:
-    return f"🚫 Ваша подписка {plan} завершилась."
+async def end_push_sub_text() -> str:
+    return f"🚫 Ваша подписка Премиум завершилась."

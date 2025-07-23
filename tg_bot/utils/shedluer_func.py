@@ -3,7 +3,7 @@ from aiogram import Bot
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
-from config import TOKEN_BOT
+from config import TOKEN_BOT, GRPS
 from database import CrudeSubscriptions, Subscriptions
 from utils.message_texts import push_subs_text, end_push_sub_text
 
@@ -20,7 +20,7 @@ async def users_push_subs(bot: Bot = bot_tg):
             if sub.day_count == 1:
                 try:
                     # айди групп
-                    grp_id = Subscriptions.get_group_ids().get(sub.plan)
+                    grp_id = GRPS[0]
                     await bot.send_message(sub.telegram_id, await end_push_sub_text(plan=grp_id))
                 except:
                     pass
