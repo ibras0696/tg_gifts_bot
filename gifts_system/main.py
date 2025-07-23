@@ -11,27 +11,26 @@ from func_push_bot import push_bot_group_message, on_shutdown  # Отправк�
 # 📂 Абсолютный путь к директории скрипта
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# 📁 Файл для кеша количества подарков
-GIFTS_FILE = os.path.join(BASE_DIR, "gifts_cache.json")
+# 📁 Файл для кеша количества подарков (только число)
+GIFTS_FILE = os.path.join(BASE_DIR, "gifts.txt")
 
 # 💾 Файл хранения сессии Telegram Web
 SESSION_FILE = os.path.join(BASE_DIR, "session.json")
 
 
-# 💾 Сохраняет текущее количество подарков в файл
+# 💾 Сохраняет количество подарков как число в текстовый файл
 def save_gifts_count(count: int):
     with open(GIFTS_FILE, "w", encoding="utf-8") as f:
-        json.dump({"count": count}, f, indent=2, ensure_ascii=False)
+        f.write(str(count))
 
 
-# 🔄 Загружает сохранённое количество подарков
+# 🔄 Загружает сохранённое количество подарков из текстового файла
 def load_gifts_count() -> int:
     try:
         with open(GIFTS_FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            return data.get("count", 0)
-    except Exception:
-        return 0  # Если файл не найден или ошибка чтения
+            return int(f.read().strip())
+    except (FileNotFoundError, ValueError):
+        return 0  # Если файла нет или в файле мусор
 
 
 # 🔁 Функция безопасного клика по элементу с повторными попытками
