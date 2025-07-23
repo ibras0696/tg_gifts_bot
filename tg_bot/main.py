@@ -5,7 +5,7 @@ from aiogram import Dispatcher, Bot
 from aiogram.exceptions import TelegramBadRequest
 
 from config import TOKEN_BOT
-from middlewares import ErrorMiddleware, SubscriptionMiddleware
+from middlewares import ErrorMiddleware
 from database import init_db
 from handlers import router
 from utils import setup_scheduler
@@ -24,8 +24,6 @@ async def main():
 
     # Подключение Мидлов
     dp.update.middleware(ErrorMiddleware())
-    # Подключение мидлвары для обработок вступления в группы
-    dp.update.middleware(SubscriptionMiddleware())
 
     # Подключение роутера
     dp.include_router(router)

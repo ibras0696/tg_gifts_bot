@@ -3,56 +3,39 @@ import json
 import logging
 import os
 
-from bs4 import BeautifulSoup
-from playwright.async_api import async_playwright, Page, TimeoutError
+from bs4 import BeautifulSoup  # Используем для парсинга HTML
+from playwright.async_api import async_playwright, Page, TimeoutError  # Асинхронный браузер для автоматизации
 
-from func_push_bot import push_bot_group_message, on_shutdown
+from func_push_bot import push_bot_group_message, on_shutdown  # Отправка уведомлений в Telegram
 
-# Абсолютный путь к директории скрипта
+# 📂 Абсолютный путь к директории скрипта
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# 📁 Файл для кеша количества подарков
 GIFTS_FILE = os.path.join(BASE_DIR, "gifts_cache.json")
+
+# 💾 Файл хранения сессии Telegram Web
 SESSION_FILE = os.path.join(BASE_DIR, "session.json")
 
 
-def save_gifts(data):
-    """
-    Сохраняет список подарков в JSON файл.
-
-    Args:
-        data (list): Список URL изображений подарков.
-    """
+# 💾 Сохраняет текущее количество подарков в файл
+def save_gifts_count(count: int):
     with open(GIFTS_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
+        json.dump({"count": count}, f, indent=2, ensure_ascii=False)
 
 
-def load_gifts():
-    """
-    Загружает список подарков из JSON файла.
-
-    Returns:
-        list: Список URL изображений подарков или пустой список,
-              если файл не найден или не удалось прочитать.
-    """
+# 🔄 Загружает сохранённое количество подарков
+def load_gifts_count() -> int:
     try:
         with open(GIFTS_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
+            data = json.load(f)
+            return data.get("count", 0)
     except Exception:
-        return []
+        return 0  # Если файл не найден или ошибка чтения
 
 
+# 🔁 Функция безопасного клика по элементу с повторными попытками
 async def click_with_retry(page: Page, selector: str, retries: int = 7, delay: float = 2.0) -> bool:
-    """
-    Пытается кликнуть по элементу с заданным селектором с повторными попытками.
-
-    Args:
-        page (Page): Объект страницы Playwright.
-        selector (str): CSS-селектор для поиска элемента.
-        retries (int): Количество попыток.
-        delay (float): Задержка между попытками в секундах.
-
-    Returns:
-        bool: True если клик успешен, False если все попытки не удались.
-    """
     for attempt in range(1, retries + 1):
         try:
             await page.wait_for_selector(selector, state="visible", timeout=5000)
@@ -69,59 +52,38 @@ async def click_with_retry(page: Page, selector: str, retries: int = 7, delay: f
     return False
 
 
+# 🎁 Получает список доступных подарков, возвращает HTML-элементы
 async def parse_gifts(page):
-    gifts = set()
+    gifts = []
     try:
+        # 🔽 Открываем меню и переходим в раздел подарков
         await page.click('#LeftMainHeader > div.DropdownMenu.main-menu > button')
         await page.wait_for_selector("div.Avatar.account-avatar", state="visible", timeout=10000)
         await page.click("div.Avatar.account-avatar")
         await page.click("text=Send a Gift", timeout=5000)
 
-        # Кликаем по "div.ripple-container" с retry
+        # 🖱 Кликаем по нужному контейнеру с подарками
         success = await click_with_retry(page, "div.ripple-container", retries=7, delay=2.0)
         if not success:
             print("Не удалось кликнуть по элементу 'div.ripple-container', возможно элемент не появился.")
             return None
 
-        await asyncio.sleep(5)  # ждём загрузку подарков
-        txt = await page.content()
+        await asyncio.sleep(5)  # ⏳ Ждём загрузку подарков
+        txt = await page.content()  # Получаем HTML-страницу
 
+        # 🧽 Парсим HTML с помощью BeautifulSoup
         soup = BeautifulSoup(txt, 'lxml').find_all('div', class_='G1mBmzxs f5ArEO1S starGiftItem')
-        for idx, gift_div in enumerate(soup):
-            # Получаем количество звезд (число рядом с иконкой)
-            button = gift_div.find('button', class_='Button')
-            star_count = None
-            if button:
-                # Текст кнопки после <i> с классом star-amount-icon — это число звёзд
-                star_icon = button.find('i', class_='star-amount-icon')
-                if star_icon:
-                    # Возьмём весь текст кнопки и уберём символы звёзд
-                    text = button.get_text(strip=True)
-                    # Оставим только цифры из текста
-                    digits = ''.join(filter(str.isdigit, text))
-                    if digits.isdigit():
-                        star_count = int(digits)
-
-            # Получаем alt текст картинки, если есть
-            img = gift_div.find('img')
-            alt_text = img.get('alt', '') if img else ''
-
-            # Формируем уникальный ключ подарка
-            unique_key = (alt_text, star_count)
-            # Если alt пустой, можно использовать индекс, но лучше, если будет какой-то уникальный атрибут
-            if not alt_text:
-                unique_key = (f"gift_idx_{idx}", star_count)
-
-            gifts.add(unique_key)
+        gifts = soup  # Возвращаем список элементов
 
     except Exception as ex:
         print(f'❌ Ошибка в parse_gifts: {ex}')
         return None
+
     return gifts
 
 
+# 🚀 Основной цикл работы скрипта
 async def main():
-    # Инициализация логирования
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s | %(levelname)-8s | %(message)s',
@@ -130,6 +92,7 @@ async def main():
     logger = logging.getLogger(__name__)
 
     async with async_playwright() as p:
+        # 🌐 Запуск браузера в headless-режиме (без GUI)
         browser = await p.chromium.launch(headless=True,
                                           args=[
                                               "--disable-blink-features=AutomationControlled",
@@ -137,41 +100,42 @@ async def main():
                                               "--disable-infobars",
                                               "--window-size=1920,1080",
                                           ])
+        # 💾 Восстановление сессии, если файл session.json существует
         context = await browser.new_context(storage_state=SESSION_FILE if os.path.exists(SESSION_FILE) else None)
         page = await context.new_page()
 
         await page.goto("https://web.telegram.org/a/")
 
+        # 👤 Если сессии нет — ожидаем ручной вход
         if not os.path.exists(SESSION_FILE):
             input("👉 Войди в Telegram вручную и нажми Enter.")
             await context.storage_state(path=SESSION_FILE)
 
+        # 🔄 Основной цикл: проверка подарков каждые 15 секунд
         while True:
             try:
                 await asyncio.sleep(3)
 
                 current_gifts = await parse_gifts(page)
-
                 if current_gifts is None:
                     logger.warning("Не удалось получить подарки, перезагружаю страницу...")
                     await page.reload()
                     await asyncio.sleep(5)
                     continue
 
-                old_gifts_raw = load_gifts()
-                old_gifts = set(tuple(item) for item in old_gifts_raw)
+                current_count = len(current_gifts)
+                previous_count = load_gifts_count()
 
-                if len(current_gifts) != len(old_gifts):
-                    diff = len(current_gifts) - len(old_gifts)
+                if current_count != previous_count:
+                    diff = current_count - previous_count
                     if diff > 0:
                         msg = f"🎉 Появилось новых подарков: {diff} шт."
-                        await push_bot_group_message(msg)
-                        logger.info(msg)
                     else:
                         msg = f"❗ Подарков стало меньше на {-diff} шт."
-                        await push_bot_group_message(msg)
-                        logger.info(msg)
-                    save_gifts([list(item) for item in current_gifts])
+
+                    await push_bot_group_message(msg)
+                    logger.info(msg)
+                    save_gifts_count(current_count)
                 else:
                     logger.info("Количество подарков не изменилось.")
 
@@ -188,9 +152,7 @@ async def main():
                 await asyncio.sleep(10)
 
 
+# ⏱ Точка входа в скрипт
 if __name__ == "__main__":
     asyncio.run(main())
-    asyncio.run(on_shutdown())
-
-# В случае ошибок можно посмотреть chat gpt который все писал
-# https://chatgpt.com/c/688014ab-7ca8-832f-8894-6ed1be687175
+    asyncio.run(on_shutdown())  # Закрытие ресурсов, если нужно

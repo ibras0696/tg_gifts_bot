@@ -3,12 +3,9 @@ import logging
 from typing import Callable, Dict, Any, Awaitable
 from datetime import datetime
 
-from aiogram.enums import ChatMemberStatus
-from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import Update, Message, ChatMemberUpdated, CallbackQuery
 from aiogram import BaseMiddleware, Bot
 
-from database import CrudeSubscriptions
 from config import ADMIN_IDS, GRPS
 
 
@@ -71,62 +68,4 @@ class ErrorMiddleware(BaseMiddleware):
                     print(f'Ошибк: {ex}')
 
 
-class SubscriptionMiddleware(BaseMiddleware):
-    def __init__(self):
-        self.group_tariffs = GRPS  # Используем эту переменную везде
 
-    async def __call__(
-        self,
-        handler: Callable,
-        event: Any,
-        data: Dict[str, Any]
-    ) -> Any:
-        bot: Bot = data['bot']
-        chat_id = None
-        user_id = None
-
-        # Определяем chat_id и user_id в зависимости от типа события
-        if isinstance(event, Message):
-            chat_id = str(event.chat.id)
-            user_id = event.from_user.id
-
-        elif isinstance(event, ChatMemberUpdated):
-            if event.old_chat_member.status == ChatMemberStatus.LEFT and \
-               event.new_chat_member.status == ChatMemberStatus.MEMBER:
-                chat_id = str(event.chat.id)
-                user_id = event.new_chat_member.user.id
-            else:
-                return await handler(event, data)
-
-        elif isinstance(event, CallbackQuery) and event.message:
-            chat_id = str(event.message.chat.id)
-            user_id = event.from_user.id
-
-        else:
-            return await handler(event, data)
-
-        # Проверяем только если чат в нужных группах
-        if chat_id in self.group_tariffs:
-            try:
-                subscription = await CrudeSubscriptions().check_subscription(user_id)
-
-                if not subscription or subscription.day_count <= 0:
-                    try:
-                        await bot.ban_chat_member(chat_id=chat_id, user_id=user_id)
-                        await bot.unban_chat_member(chat_id=chat_id, user_id=user_id)
-                        logging.info(f"❌ {user_id} кикнут из {chat_id}, нет подписки")
-
-                        # Отправляем уведомление админам
-                        for admin_id in ADMIN_IDS:
-                            await bot.send_message(
-                                admin_id,
-                                f"👤 Пользователь {user_id} исключён из группы {chat_id}\n"
-                                f"📋 Причина: отсутствует активная подписка"
-                            )
-                    except TelegramBadRequest as e:
-                        logging.error(f"⚠️ Ошибка при кике пользователя в {chat_id}: {e}")
-
-            except Exception as e:
-                logging.exception(f"❌ Ошибка при проверке подписки: {e}")
-
-        return await handler(event, data)
