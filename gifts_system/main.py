@@ -1,11 +1,11 @@
 import asyncio
-from pprint import pprint
 import json
 import os
 
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright, Page, TimeoutError
 
+from func_push_bot import push_bot_group_message
 
 # Абсолютный путь к директории скрипта
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -67,53 +67,7 @@ async def click_with_retry(page: Page, selector: str, retries: int = 7, delay: f
 
     return False
 
-#
-# async def parse_gifts(page: Page):
-#     """
-#     Асинхронно парсит страницу с подарками пользователя.
-#
-#     Последовательность действий:
-#     - Открывает главное меню.
-#     - Переходит в меню аккаунта.
-#     - Кликает по пункту "Send a Gift".
-#     - Кликает по элементу с подарками с повторными попытками.
-#     - Собирает все уникальные URL изображений подарков.
-#
-#     Args:
-#         page (Page): Объект страницы Playwright.
-#
-#     Returns:
-#         set: Множество URL изображений подарков.
-#         None: Если произошла ошибка.
-#     """
-#     gifts = set()
-#     try:
-#         await page.click('#LeftMainHeader > div.DropdownMenu.main-menu > button')
-#         await page.wait_for_selector("div.Avatar.account-avatar", state="visible", timeout=10000)
-#         await page.click("div.Avatar.account-avatar")
-#         await page.click("text=Send a Gift", timeout=5000)
-#
-#         # Кликаем по "div.ripple-container" с retry
-#         success = await click_with_retry(page, "div.ripple-container", retries=7, delay=2.0)
-#         if not success:
-#             print("Не удалось кликнуть по элементу 'div.ripple-container', возможно элемент не появился.")
-#             return None
-#
-#         # Ждём, чтобы страница обновилась и загрузились подарки
-#         await asyncio.sleep(5)
-#
-#         # Получаем HTML содержимое страницы
-#         txt = await page.content()
-#         soup = BeautifulSoup(txt, 'lxml').find_all('div', class_='G1mBmzxs f5ArEO1S starGiftItem')
-#         for _ in range(2):
-#             print(soup[_])
-#         for i in soup:
-#             img_src = i.find('img').get('src')
-#             gifts.add(img_src)
-#     except Exception as ex:
-#         print(f'❌ Ошибка в parse_gifts: {ex}')
-#         return None
-#     return gifts
+
 async def parse_gifts(page):
     gifts = set()
     try:
@@ -176,7 +130,7 @@ async def main():
     - В случае ошибки перезагружает страницу и продолжает работу.
     """
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True,
+        browser = await p.chromium.launch(headless=False,
                                           args=[
                                               "--disable-blink-features=AutomationControlled",
                                               "--no-sandbox",
@@ -207,15 +161,18 @@ async def main():
                     await asyncio.sleep(5)
                     continue
 
-                old_gifts = set(load_gifts())
+                old_gifts_raw = load_gifts()
+                old_gifts = set(tuple(item) for item in old_gifts_raw)
 
                 if len(current_gifts) != len(old_gifts):
                     diff = len(current_gifts) - len(old_gifts)
                     if diff > 0:
+                        await push_bot_group_message(f"🎉 Появилось новых подарков: {diff} шт.")
                         print(f"🎉 Появилось новых подарков: {diff} шт.")
                     else:
+                        await push_bot_group_message(f"❗ Подарков стало меньше на {-diff} шт.")
                         print(f"❗ Подарков стало меньше на {-diff} шт.")
-                    save_gifts(list(current_gifts))
+                    save_gifts([list(item) for item in current_gifts])
                 else:
                     print("Количество подарков не изменилось.")
 

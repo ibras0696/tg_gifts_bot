@@ -7,14 +7,14 @@ dotenv.load_dotenv()
 # Токен бота
 BOT_TOKEN = os.getenv('BOT_TOKEN')
 
-# Api айди с телеграмма
-API_ID = os.getenv('API_ID')
+# Разбор ID админов переданный в env и преобразование
+def raz_admins(s: str) -> list[int]:
+    txt = s.split(',')
+    st = [int(i) for i in txt]
+    return st
 
-# Api хеш с телеграмма
-API_HASH = os.getenv('API_HASH')
+# Айди Администратора TG
+ADMIN_IDS = raz_admins(os.getenv('ADMIN_IDS'))
 
-# Админ Id Телеграмма
-ADMIN_ID = os.getenv('ADMIN_ID')
-
-
-# print(BOT_TOKEN, API_ID, API_HASH)
+# Айди Групп
+GRPS = raz_admins(os.getenv('GROUP_IDS'))

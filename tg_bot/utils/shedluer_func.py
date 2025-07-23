@@ -3,9 +3,9 @@ from aiogram import Bot
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
-from ..config import TOKEN_BOT
+from config import TOKEN_BOT
 from database import CrudeSubscriptions, Subscriptions
-from ..utils.message_texts import push_subs_text, end_push_sub_text
+from utils.message_texts import push_subs_text, end_push_sub_text
 
 
 # Экземпляр бота для работы

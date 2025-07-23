@@ -16,4 +16,7 @@ def raz_admins(s: str) -> list[int]:
 # Айди Администратора TG
 ADMIN_IDS = raz_admins(os.getenv('ADMIN_IDS'))
 
+# Айди Групп
+GRPS = raz_admins(os.getenv('GROUP_IDS'))
+
 # print(BOT_TOKEN, API_ID, API_HASH)

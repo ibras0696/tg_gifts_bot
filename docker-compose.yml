@@ -2,29 +2,31 @@ version: "3.9"
 
 services:
   gifts_system:
+    container_name: gifts_system
+    build:
+      context: ./gifts_system
+      dockerfile: Dockerfile
     env_file:
       - .env
-    build:
-      context: .
-      dockerfile: ./gifts_system/Dockerfile
-    container_name: gifts_system
     volumes:
-      - ./app:/app
+      - ./gifts_system:/app
       - ./database:/database
     environment:
       - PYTHONPATH=/app:/database
     restart: always
 
   tg_bot:
+    container_name: aiogram_bot
+    build:
+      context: ./tg_bot
+      dockerfile: Dockerfile
     env_file:
       - .env
-    build:
-      context: .
-      dockerfile: ./tg_bot/Dockerfile
-    container_name: aiogram_bot
     volumes:
       - ./tg_bot:/app
       - ./database:/database
     environment:
       - PYTHONPATH=/app:/database
+    depends_on:
+      - gifts_system
     restart: always

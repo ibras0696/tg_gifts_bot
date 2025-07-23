@@ -4,9 +4,9 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 
 from database import CrudeUser, CrudeSubscriptions, CrudePayments, Subscriptions
-from ..keyboards import support_kb
-from ..utils import message_texts
-from ..keyboards.common import start_kb, pay_course_kb, profile_kb
+from keyboards import support_kb
+from utils import message_texts
+from keyboards.common import start_kb, pay_course_kb, profile_kb
 
 router = Router()
 
