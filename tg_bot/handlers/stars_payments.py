@@ -23,10 +23,6 @@ async def pre_checkout_handler(query: PreCheckoutQuery):
 # Обработчик успешной оплаты
 @router.message(F.successful_payment)
 async def success_payment_handler(message: Message, state: FSMContext, bot: Bot):
-    # Проверяем, что сумма оплаты корректная
-    if message.successful_payment.total_amount != 69 or message.successful_payment.total_amount == 1:
-        await message.answer("Некорректная сумма оплаты!")
-        return
 
     data = await state.get_data()
     msg_id_del = data.get('message_invoice')
