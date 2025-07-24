@@ -92,14 +92,14 @@ async def main():
 
     async with async_playwright() as p:
         # 🌐 Запуск браузера в headless-режиме (без GUI)
-        browser = await p.chromium.launch(headless=True,
+        browser = await p.chromium.launch(headless=False,
                                           args=[
                                               "--disable-blink-features=AutomationControlled",
                                               "--no-sandbox",
                                               "--disable-infobars",
                                               "--window-size=1920,1080",
                                           ])
-        # 💾 Восстановление сессии, если файл session.json существует
+        # 💾 Восстановление сессии, если файл my_session.json существует
         context = await browser.new_context(storage_state=SESSION_FILE if os.path.exists(SESSION_FILE) else None)
         page = await context.new_page()
 
