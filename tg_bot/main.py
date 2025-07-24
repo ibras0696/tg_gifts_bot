@@ -16,7 +16,7 @@ logging.basicConfig(
 )
 
 # Экземпляры
-bot = Bot(token=TOKEN_BOT, parse_mode="HTML")  # parse_mode пригодится для всех сообщений
+bot = Bot(token=TOKEN_BOT)  # parse_mode пригодится для всех сообщений
 dp = Dispatcher()
 
 

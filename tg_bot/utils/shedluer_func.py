@@ -8,7 +8,7 @@ from utils.message_texts import push_subs_text, end_push_sub_text
 
 
 # Экземпляр бота
-bot_tg = Bot(token=TOKEN_BOT, parse_mode="HTML")  # Укажи parse_mode, если ты используешь HTML-форматирование
+bot_tg = Bot(token=TOKEN_BOT)  # Укажи parse_mode, если ты используешь HTML-форматирование
 
 
 # Основная задача: оповещение и уменьшение подписок
