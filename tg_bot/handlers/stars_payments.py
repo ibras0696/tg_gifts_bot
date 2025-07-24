@@ -24,9 +24,9 @@ async def pre_checkout_handler(query: PreCheckoutQuery):
 async def success_payment_handler(message: Message, state: FSMContext, bot: Bot):
     data = await state.get_data()
     msg_id_del = data.get('message_invoice')
-
-    # Удаляем инвойс
-    await bot.delete_message(chat_id=message.chat.id, message_id=msg_id_del)
+    if msg_id_del:
+        # Удаляем инвойс
+        await bot.delete_message(chat_id=message.chat.id, message_id=msg_id_del)
 
     # Получаем ID пользователя
     user_id = message.from_user.id
