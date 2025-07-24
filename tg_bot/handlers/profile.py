@@ -6,25 +6,36 @@ from utils import message_texts
 
 router = Router()
 
+
+# Вынесенная функция показа главного меню
+async def show_main_menu(callback: CallbackQuery) -> None:
+    await callback.message.edit_text(
+        text=message_texts.start_text,
+        reply_markup=start_kb
+    )
+
+
+# Обработка кнопок профиля
 @router.callback_query(F.data.startswith('profile_'))
-async def profile_query(call_back: CallbackQuery):
-    # Удаление мигающей кнопки
-    await call_back.answer()
+async def handle_profile_query(callback: CallbackQuery) -> None:
+    await callback.answer()  # Удаление мигающей кнопки
 
-    match call_back.data.replace('profile_', ''):
+    match callback.data.removeprefix('profile_'):
         case 'back':
-            await call_back.message.edit_text(text=message_texts.start_text, reply_markup=start_kb)
+            await show_main_menu(callback)
         case _:
-            pass
+            pass  # Можно добавить логгирование неизвестной команды
 
-# Обработка кнопок поддержки назад
+
+# Обработка кнопок поддержки
 @router.callback_query(F.data.startswith('support_'))
-async def profile_query(call_back: CallbackQuery):
-    # Удаление мигающей кнопки
-    await call_back.answer()
+async def handle_support_query(callback: CallbackQuery) -> None:
+    await callback.answer()  # Удаление мигающей кнопки
 
-    match call_back.data.replace('support_', ''):
+    match callback.data.removeprefix('support_'):
         case 'back':
-            await call_back.message.edit_text(text=message_texts.start_text, reply_markup=start_kb)
+            await show_main_menu(callback)
+        case 'support':
+            pass  # Оставлено, как ты просил (support_support)
         case _:
-            pass
+            pass  # Можно логировать неизвестную кнопку

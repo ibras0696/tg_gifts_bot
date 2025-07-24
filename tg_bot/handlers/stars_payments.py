@@ -1,3 +1,4 @@
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import PreCheckoutQuery, SuccessfulPayment
 from aiogram import Bot, Router, F
@@ -22,11 +23,19 @@ async def pre_checkout_handler(query: PreCheckoutQuery):
 # Обработчик успешной оплаты
 @router.message(F.successful_payment)
 async def success_payment_handler(message: Message, state: FSMContext, bot: Bot):
+    # Проверяем, что сумма оплаты корректная
+    if message.successful_payment.total_amount != 69 or message.successful_payment.total_amount == 1:
+        await message.answer("Некорректная сумма оплаты!")
+        return
+
     data = await state.get_data()
     msg_id_del = data.get('message_invoice')
     if msg_id_del:
-        # Удаляем инвойс
-        await bot.delete_message(chat_id=message.chat.id, message_id=msg_id_del)
+        try:
+            # Удаления инвойся
+            await bot.delete_message(chat_id=message.chat.id, message_id=msg_id_del)
+        except TelegramBadRequest:
+            pass  # логгировать при необходимости
 
     # Получаем ID пользователя
     user_id = message.from_user.id
