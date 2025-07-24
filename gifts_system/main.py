@@ -92,7 +92,7 @@ async def main():
 
     async with async_playwright() as p:
         # 🌐 Запуск браузера в headless-режиме (без GUI)
-        browser = await p.chromium.launch(headless=False,
+        browser = await p.chromium.launch(headless=True,
                                           args=[
                                               "--disable-blink-features=AutomationControlled",
                                               "--no-sandbox",
