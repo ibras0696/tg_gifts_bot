@@ -7,7 +7,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from database import CrudeUser, CrudeSubscriptions, CrudePayments, Subscriptions
 from utils import message_texts
 
-from tg_bot.keyboards import profile_kb
+from keyboards import profile_kb
 
 router = Router()
 
