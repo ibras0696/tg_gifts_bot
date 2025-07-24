@@ -116,7 +116,7 @@ async def main():
                 await asyncio.sleep(3)
 
                 current_gifts = await parse_gifts(page)
-                if current_gifts is None:
+                if current_gifts is None or len(current_gifts) == 0:
                     logger.warning("Не удалось получить подарки, перезагружаю страницу...")
                     await page.reload()
                     await asyncio.sleep(5)
