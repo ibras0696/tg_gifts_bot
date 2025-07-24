@@ -17,6 +17,9 @@ router = Router()
 
 @router.callback_query(F.data.startswith('pay_'))
 async def pay_cmd(call_back: CallbackQuery, bot: Bot, state: FSMContext):
+    # Удаление мигающей кнопки
+    await call_back.answer()
+
     user_id = call_back.message.chat.id
     match call_back.data.replace('pay_', ''):
         case 'pay':

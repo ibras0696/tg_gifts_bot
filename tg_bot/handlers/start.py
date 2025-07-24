@@ -27,6 +27,9 @@ async def start_cmd(message: Message, state: FSMContext):
 
 @router.callback_query(F.data.startswith('start_'))
 async def update_start_cmd(call_back: CallbackQuery):
+    # Удаление мигающей кнопки
+    await call_back.answer()
+
     tg_id = call_back.message.chat.id
     try:
         match call_back.data.replace('start_', ''):
