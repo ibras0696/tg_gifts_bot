@@ -36,7 +36,7 @@ class Subscriptions(Base):
     # Дата покупки
     registered_at = Column(DateTime, default=datetime.now(timezone.utc))
     # Количество дней подписки
-    day_count = Column(Integer, nullable=False)
+    day_count = Column(Integer, nullable=False, default=30)  # По умолчанию 30 дней
     # Число дня
     day = Column(Integer, nullable=False)
     # Число Месяца
