@@ -3,6 +3,7 @@ import logging
 from typing import Callable, Dict, Any, Awaitable
 from datetime import datetime
 
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import Update, Message, ChatMemberUpdated, CallbackQuery
 from aiogram import BaseMiddleware, Bot
 
@@ -26,7 +27,8 @@ class ErrorMiddleware(BaseMiddleware):
     ) -> Any:
         try:
             return await handler(event, data)
-
+        except TelegramBadRequest:
+            pass
         except Exception as e:
             bot: Bot = data.get("bot")
             tb = traceback.format_exc()
