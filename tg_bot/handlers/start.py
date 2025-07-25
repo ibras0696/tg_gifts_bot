@@ -49,7 +49,7 @@ async def update_start_cmd(callback: CallbackQuery) -> None:
 
                     profile_text = await message_texts.get_profile_text(telegram_id=tg_id)
                     await callback.message.edit_text(
-                        text=profile_text,
+                        text=f'{message_texts.pay_completed_text}{profile_text}',
                         reply_markup=start_kb
                     )
                 else:
