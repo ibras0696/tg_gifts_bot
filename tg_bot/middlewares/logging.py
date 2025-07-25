@@ -54,16 +54,15 @@ class ErrorMiddleware(BaseMiddleware):
             # Отправка админу
             if bot:
                 try:
-                    for tg_id in ADMIN_IDS:
-                        await bot.send_message(
-                            chat_id=tg_id,
-                            text=f"❌ Ошибка!"
-                                 f"\nТелеграм ID: {telegram_id}"
-                                 f"\nТелеграм Ник: {telegram_name}"
-                                 f"\nВремя: {formatted_time}"
-                                 f"\n\n<b>{type(e).__name__}:</b> {e}\n\n<pre>{tb[-700:-1]}</pre>",
-                            parse_mode="HTML"
-                        )
+                    await bot.send_message(
+                        chat_id=ADMIN_IDS[0],
+                        text=f"❌ Ошибка!"
+                             f"\nТелеграм ID: {telegram_id}"
+                             f"\nТелеграм Ник: {telegram_name}"
+                             f"\nВремя: {formatted_time}"
+                             f"\n\n<b>{type(e).__name__}:</b> {e}\n\n<pre>{tb[-700:-1]}</pre>",
+                        parse_mode="HTML"
+                    )
                 except Exception as ex:
                     print(f'Ошибк: {ex}')
 
