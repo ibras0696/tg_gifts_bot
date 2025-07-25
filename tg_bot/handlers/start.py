@@ -38,25 +38,25 @@ async def update_start_cmd(callback: CallbackQuery) -> None:
     try:
         match action:
             case 'status':
+                await callback.message.edit_text(
+                    text=message_texts.status_txt,
+                    reply_markup=start_kb,
+                    parse_mode='HTML'
+                )
+            case 'pay':
                 has_subscription = await CrudeSubscriptions().check_subscription(telegram_id=tg_id)
-
                 if has_subscription:
+
+                    profile_text = await message_texts.get_profile_text(telegram_id=tg_id)
                     await callback.message.edit_text(
-                        text=message_texts.status_txt,
+                        text=profile_text,
                         reply_markup=start_kb
                     )
                 else:
                     await callback.message.edit_text(
-                        text=message_texts.no_subs_text,
-                        reply_markup=start_kb,
-                        parse_mode='HTML'
+                        text=message_texts.pay_time_text,
+                        reply_markup=pay_course_kb
                     )
-
-            case 'pay':
-                await callback.message.edit_text(
-                    text=message_texts.pay_time_text,
-                    reply_markup=pay_course_kb
-                )
 
             case 'profile':
                 profile_text = await message_texts.get_profile_text(telegram_id=tg_id)

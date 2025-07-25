@@ -12,6 +12,8 @@ from keyboards import profile_kb
 
 router = Router()
 
+# Цена подписки
+amount = 79
 
 # Обработчик команды оплаты
 @router.pre_checkout_query()
@@ -49,19 +51,18 @@ async def success_payment_handler(message: Message, state: FSMContext, bot: Bot)
 # Функция для обработки платежа
 async def handle_pay(user_id: int):
     days = 30
-    price = 69
     # Добавление подписки
     sub = CrudeSubscriptions()
-    await sub.add_subscription(user_id, days, price)
+    await sub.add_subscription(user_id, days, amount)
 
     paym = CrudePayments()
-    await paym.add_payment(user_id, days, price)
+    await paym.add_payment(user_id, days, amount)
 
     return message_texts.accept_course_text + await message_texts.get_profile_text(user_id)
 
 
 # Функция для создания клавиатуры с кнопкой оплаты
-def only_pay_keyboard(amount: int = 69):
+def only_pay_keyboard(amount: int = amount):
     kb = InlineKeyboardBuilder()
     kb.button(text=f"Оплатить {amount} ⭐️", pay=True)
     return kb.as_markup()

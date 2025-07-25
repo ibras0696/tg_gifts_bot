@@ -14,6 +14,10 @@ from states import DeleteInvoiceState
 router = Router()
 
 
+# Цена подписки
+amount = 79
+
+
 @router.callback_query(F.data.startswith('pay_'))
 async def pay_cmd(callback: CallbackQuery, bot: Bot, state: FSMContext) -> None:
     await callback.answer()  # Удаление мигающей кнопки
@@ -23,8 +27,6 @@ async def pay_cmd(callback: CallbackQuery, bot: Bot, state: FSMContext) -> None:
 
     match action:
         case 'pay':
-            amount: int = 1  # Цена в XTR (звёзды Telegram)
-
             prices = [
                 LabeledPrice(
                     label=f"1 месяц PRO — {amount} XTR",
@@ -35,12 +37,12 @@ async def pay_cmd(callback: CallbackQuery, bot: Bot, state: FSMContext) -> None:
             invoice = await bot.send_invoice(
                 chat_id=user_id,
                 title=f"Покупка PRO-доступа ({amount} XTR)",
-                description="Вы получите доступ к курсу на 30 дней за 1 Telegram Star.",
+                description=message_texts.pay_info_text,
                 payload="pro_month_1",
                 currency="XTR",
                 prices=prices,
                 provider_token="",  # Для Telegram Stars — оставляем пустым
-                reply_markup=only_pay_keyboard(amount)
+                reply_markup=only_pay_keyboard(amount),
             )
 
             # Сохраняем ID сообщения с инвойсом для возможного удаления
