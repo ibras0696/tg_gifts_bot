@@ -106,7 +106,7 @@ async def get_profile_text(telegram_id: int) -> str | None:
     if subscription:
         profile_lines.append(f"🔔 Подписка действует до:"
                              f"\n🗓️{get_subscription_end_datetime(subscription.day_count)['date']}"
-                             f"\n⏰{get_subscription_end_datetime(subscription.day_count)['time']} ")
+                             f"\n⏰ 00:00:00") #{get_subscription_end_datetime(subscription.day_count)['time']} ")
 
     return "\n".join(profile_lines)
 
