@@ -32,10 +32,9 @@ def inline_keyboard_buttons(buttons_dct: dict, starts: str='', adjust: int=2, ur
 # После кнопки старт
 start_kb = inline_keyboard_buttons(
     buttons_dct={
-        '🎓 Проверить Статус': 'status',
-        '💳 Продлить подписку' : 'pay',
-        '🏆 Профиль': 'profile',
-        '🛠 О Боте': 'bot',
+        '🌟 Оформить подписку' : 'pay',
+        '👤 Мой профиль': 'profile',
+        'ℹ️ О боте': 'bot',
     },
     adjust=1,
     starts='start_'
