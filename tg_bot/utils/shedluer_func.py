@@ -31,7 +31,7 @@ async def users_push_subs(bot: Bot = bot_tg):
     try:
         subs = await db.all_reduce_subscriptions()
         for sub in subs:
-            if 0 < sub.day_count < 3:
+            if 0 < sub.day_count < 2:
                 try:
                     await bot.send_message(sub.telegram_id, await push_subs_text(sub.day_count))
                 except Exception as e:
