@@ -13,7 +13,7 @@ from keyboards import profile_kb
 router = Router()
 
 # Цена подписки
-amount = 79
+amount = 39
 
 # Обработчик команды оплаты
 @router.pre_checkout_query()

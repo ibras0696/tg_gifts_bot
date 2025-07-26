@@ -15,7 +15,7 @@ router = Router()
 
 
 # Цена подписки
-amount = 79
+amount = 39
 
 
 @router.callback_query(F.data.startswith('pay_'))
